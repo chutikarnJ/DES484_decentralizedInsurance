@@ -4,7 +4,7 @@ import PolicyManagementABI from "../../abis/PolicyManagement.json";
 import PremiumCollectionABI from "../../abis/PremiumCollection.json";
 
 const POLICY_MANAGEMENT_ADDRESS = "0xE883AAB89149fC4c6E106644692626CF88875eeB";
-const PREMIUM_COLLECTION_ADDRESS = "0xF9baDbBD072d1989533578E3056CD70baA95F427";
+const PREMIUM_COLLECTION_ADDRESS = "0xAaFa8313acE9A3D1e0d13f71228826bd507c706d";
 
 interface DashboardData {
   totalPolicyHolders: number;

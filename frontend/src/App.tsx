@@ -7,6 +7,7 @@ import Register from "./pages/Register";
 import ProtectedRoute from "./components/ProtectRoute"; 
 import AdminDashboard from "./pages/admin/dashboard";
 import AdminPolicy from "./pages/admin/policy";
+import AdminClaim from "./pages/admin/claim";
 import ViewUserPolicies from "./pages/ViewUserPolicies";
 import Claim from "./pages/Claim";
 
@@ -60,6 +61,14 @@ const App: React.FC = () => {
           element={
             <ProtectedRoute role="ADMIN_ROLE">
               <AdminPolicy />
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/admin-claim" 
+          element={
+            <ProtectedRoute role="ADMIN_ROLE">
+              <AdminClaim />
             </ProtectedRoute>
           } 
         />

@@ -77,10 +77,10 @@ contract PremiumCollection {
         emit PoolBalanceUpdated(poolBalance);
     }
 
-    function withdrawFunds(uint256 amount) external onlyAdmin {
+     function withdrawFunds(uint256 amount, address claimer) public onlyAdmin{
         require(amount <= poolBalance, "Insufficient balance in the pool");
         poolBalance -= amount;
-        payable(msg.sender).transfer(amount);
+        payable(claimer).transfer(amount);
         emit PoolBalanceUpdated(poolBalance);
     }
 }
