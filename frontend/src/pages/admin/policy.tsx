@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import Web3 from 'web3';
 import PolicyManagementABI from '../../abis/PolicyManagement.json';
+import NavbarAdmin from '../../components/NavbarAdmin';
 
 const CONTRACT_ADDRESS = '0xE883AAB89149fC4c6E106644692626CF88875eeB';
 
@@ -135,7 +136,8 @@ const PolicyManagement: React.FC = () => {
   }, []);
 
   return (
-    <div className="container mx-auto p-6">
+    <div className="min-h-screen bg-gray-100 flex flex-col items-center">
+      <NavbarAdmin/>
       <h1 className="text-3xl font-bold text-center mb-6">Admin Policy Management</h1>
 
       {error && <div className="bg-red-100 text-red-700 p-4 rounded-md mb-4">{error}</div>}

@@ -22,7 +22,7 @@ contract Payout {
         _;
     }
 
-    /**
+    /*
      * @dev Allows the admin to withdraw funds from the PremiumCollection pool.
      * @param amount The amount of funds to withdraw from the pool.
      * @param recipient The address where the withdrawn funds will be sent.
@@ -34,12 +34,12 @@ contract Payout {
         require(amount > 0, "Amount must be greater than zero");
         
         // Call the PremiumCollection contract to withdraw funds
-        //premiumCollection.withdrawFunds(amount, recipient);
+        premiumCollection.withdrawFunds(amount, recipient);
         
         emit AdminWithdrawal(msg.sender, amount, recipient);
     }
 
-    /**
+    /*
      * @dev Helper function to check if a user is an admin.
      * @param user The address to check.
      * @return bool True if the user is an admin, false otherwise.

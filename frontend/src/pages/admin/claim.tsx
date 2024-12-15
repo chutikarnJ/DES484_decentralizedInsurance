@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import Web3 from "web3";
 import ClaimManagementABI from "../../abis/ClaimManagement.json";
+import NavbarAdmin from "../../components/NavbarAdmin";
 
 const CLAIM_MANAGEMENT_ADDRESS = "0xb4a360d65a0fA07B58CB81b79198890428B29F28";
 
@@ -124,6 +125,7 @@ const AdminClaims: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gray-100">
+         <NavbarAdmin/>
       <div className="container mx-auto mt-10">
         <h1 className="text-3xl font-bold text-center">Admin Claims Management</h1>
 

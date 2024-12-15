@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import Web3 from "web3";
 import PolicyManagementABI from "../../abis/PolicyManagement.json";
 import PremiumCollectionABI from "../../abis/PremiumCollection.json";
+import NavbarAdmin from "../../components/NavbarAdmin";
 
 const POLICY_MANAGEMENT_ADDRESS = "0xE883AAB89149fC4c6E106644692626CF88875eeB";
 const PREMIUM_COLLECTION_ADDRESS = "0xAaFa8313acE9A3D1e0d13f71228826bd507c706d";
@@ -98,6 +99,7 @@ const AdminDashboard: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gray-100 flex flex-col items-center">
+      <NavbarAdmin/>
       <div className="w-full max-w-6xl mt-8 bg-white shadow-lg p-6 rounded-lg">
         <h1 className="text-3xl font-bold text-center mb-8">Admin Dashboard</h1>
 
@@ -117,12 +119,7 @@ const AdminDashboard: React.FC = () => {
         {error && <p className="text-red-500">{error}</p>}
 
         {dashboardData && (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-6">
-            <div className="bg-blue-500 text-white p-6 rounded-lg shadow-md">
-              <h2 className="text-xl font-bold">Total Policy Holders</h2>
-              <p className="text-4xl font-bold mt-4">{dashboardData.totalPolicyHolders}</p>
-            </div>
-
+          <div>
             <div className="bg-green-500 text-white p-6 rounded-lg shadow-md">
               <h2 className="text-xl font-bold">Total Policies Created</h2>
               <p className="text-4xl font-bold mt-4">{dashboardData.totalPoliciesCreated}</p>
