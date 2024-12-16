@@ -34,7 +34,7 @@ contract Payout {
         require(amount > 0, "Amount must be greater than zero");
         
         // Call the PremiumCollection contract to withdraw funds
-        premiumCollection.withdrawFunds(amount, recipient);
+        //premiumCollection.withdrawFunds(amount, recipient);
         
         emit AdminWithdrawal(msg.sender, amount, recipient);
     }

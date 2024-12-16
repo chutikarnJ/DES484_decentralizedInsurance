@@ -4,7 +4,7 @@ import Navbar from "../components/Navbar";
 import ClaimManagementABI from "../abis/ClaimManagement.json";
 import PolicyManagementABI from "../abis/PolicyManagement.json";
 
-const CLAIM_MANAGEMENT_ADDRESS = "0xb4a360d65a0fA07B58CB81b79198890428B29F28";
+const CLAIM_MANAGEMENT_ADDRESS = "0x46e011653866841aFeaBa33C6eb9eE18E5817f96";
 const POLICY_MANAGEMENT_ADDRESS = "0xE883AAB89149fC4c6E106644692626CF88875eeB";
 
 interface Policy {
@@ -48,6 +48,7 @@ const ClaimPage: React.FC = () => {
       const web3 = new Web3(window.ethereum);
       const accounts = await web3.eth.requestAccounts();
       setAccount(accounts[0]);
+      console.log(accounts[0]);
       await fetchUserPolicies(accounts[0]);
       await fetchUserClaims(accounts[0]);
     } catch (error) {
@@ -109,9 +110,22 @@ const ClaimPage: React.FC = () => {
     }
   };
 
+   // 🔥 Handle Claim Type Selection
+   const handleClaimTypeSelect = (type: string) => {
+    console.log("Selected Claim Type:", type);
+    setClaimType(type);
+  };
+
   // 🔥 Handle Claim Submission
   const handleSubmitClaim = async (e: React.FormEvent) => {
     e.preventDefault();
+      // Check if claimType is set
+  if (!claimType) {
+    alert("Please select a claim type.");
+    return;
+  }
+
+  console.log("Claim Type before submission:", claimType);
     try {
       setLoading(true);
       const web3 = new Web3(window.ethereum);
@@ -171,7 +185,7 @@ const ClaimPage: React.FC = () => {
   ))}
 </select>
 
-        <select value={claimType} onChange={(e) => setClaimType(e.target.value)} required className="w-full p-2 border rounded">
+        <select value={claimType} onChange={(e) => handleClaimTypeSelect(e.target.value)} required className="w-full p-2 border rounded">
           <option value="">Select Claim Type</option>
           {coverOptions.map((type, index) => (
             <option key={index} value={type}>

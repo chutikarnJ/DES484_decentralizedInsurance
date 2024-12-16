@@ -136,134 +136,84 @@ const PolicyManagement: React.FC = () => {
   }, []);
 
   return (
-    <div className="min-h-screen bg-gray-100 flex flex-col items-center">
+    <div className="min-h-screen">
       <NavbarAdmin/>
-      <h1 className="text-3xl font-bold text-center mb-6">Admin Policy Management</h1>
+      <div className="container mx-auto p-6">
+        <h1 className="text-4xl font-bold text-center text-black-800 mb-10">Admin Policy Management</h1>
 
-      {error && <div className="bg-red-100 text-red-700 p-4 rounded-md mb-4">{error}</div>}
+        {error && (
+          <div className="bg-red-100 text-red-700 p-4 rounded-md mb-6 text-center">
+            <strong>Error:</strong> {error}
+          </div>
+        )}
 
-      {/* Policy Creation Form */}
-      <div className="p-6 bg-white rounded-lg shadow-md mb-8">
-        <h2 className="text-xl font-bold mb-4">Create New Policy</h2>
-
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label className="block mb-2 font-semibold">Insurance Plan *</label>
-            <input 
-              name="insurancePlan" 
-              placeholder="e.g. Comprehensive" 
-              value={policyData.insurancePlan} 
-              onChange={handleChange} 
-              className="p-3 border rounded w-full" 
-            />
+        <div className="bg-white p-8 rounded-lg shadow-md mb-8">
+          <h2 className="text-2xl font-bold mb-4 text-gray-800">Create New Policy</h2>
+          <div className="grid grid-cols-2 gap-6">
+            {Object.keys(policyData).map((key) => (
+              <div key={key}>
+                <label className="block text-sm font-bold text-gray-700 mb-2">
+                  {key.charAt(0).toUpperCase() + key.slice(1).replace(/([A-Z])/g, ' $1')}
+                </label>
+                <input 
+                  name={key} 
+                  value={(policyData as any)[key]} 
+                  onChange={handleChange} 
+                  className="w-full p-3 border rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500" 
+                />
+              </div>
+            ))}
           </div>
 
-          <div>
-            <label className="block mb-2 font-semibold">Base Premium Rate *</label>
-            <input 
-              name="basePremiumRate" 
-              placeholder="e.g. 200" 
-              value={policyData.basePremiumRate} 
-              onChange={handleChange} 
-              className="p-3 border rounded w-full" 
-            />
-          </div>
-
-          <div>
-            <label className="block mb-2 font-semibold">Deductible (in USD) *</label>
-            <input 
-              name="deductible" 
-              placeholder="e.g. 500" 
-              value={policyData.deductible} 
-              type="number" 
-              onChange={handleChange} 
-              className="p-3 border rounded w-full" 
-            />
-          </div>
-
-          <div>
-            <label className="block mb-2 font-semibold">Insurance Coverage (in USD) *</label>
-            <input 
-              name="insuranceCoverage" 
-              placeholder="e.g. 100000" 
-              value={policyData.insuranceCoverage} 
-              type="number" 
-              onChange={handleChange} 
-              className="p-3 border rounded w-full" 
-            />
-          </div>
-
-          <div>
-            <label className="block mb-2 font-semibold">Third Party Liability (in USD) *</label>
-            <input 
-              name="thirdPartyLiability" 
-              placeholder="e.g. 100000" 
-              value={policyData.thirdPartyLiability} 
-              type="number" 
-              onChange={handleChange} 
-              className="p-3 border rounded w-full" 
-            />
-          </div>
-
-          <div>
-            <label className="block mb-2 font-semibold">Cover (comma separated)</label>
-            <input 
-              name="cover" 
-              placeholder="e.g. Fire, Theft, Natural Disasters" 
-              value={policyData.cover} 
-              onChange={handleChange} 
-              className="p-3 border rounded w-full" 
-            />
-          </div>
+          <button 
+            onClick={createPolicy} 
+            className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 mt-6 rounded-lg transition duration-300"
+          >
+            {loading ? 'Creating Policy...' : 'Create Policy'}
+          </button>
         </div>
 
-        <button 
-          onClick={createPolicy} 
-          className="w-full mt-4 p-3 bg-blue-600 text-white font-bold rounded"
-        >
-          {loading ? 'Creating Policy...' : 'Create Policy'}
-        </button>
-      </div>
+        <div className="bg-white p-8 rounded-lg shadow-md">
+          <h2 className="text-2xl font-bold text-gray-800 mb-6">All Created Policies</h2>
+          <p className="font-semibold text-lg mb-6 text-blue-700">
+            Total Policies Created: {policyCount}
+          </p>
 
-      {/* View All Policies */}
-      <div className="bg-white rounded-lg shadow-md p-6">
-        <h2 className="text-xl font-bold mb-4">All Created Policies</h2>
-        <p className="font-semibold text-lg mb-4">
-          Total Policies Created: <span className="text-blue-600">{policyCount}</span>
-        </p>
-
-         {loading ? (
-          <p>Loading policies...</p>
-        ) : allPolicies.length === 0 ? (
-          <p>No policies created yet.</p>
-        ) : (
-          <table className="table-auto w-full border-collapse">
-            <thead>
-              <tr className="bg-gray-200">
-                <th>ID</th>
-                <th>Insurance Plan</th>
-                <th>Premium Rate</th>
-                <th>Deductible</th>
-                <th>Coverage</th>
-                <th>Third Party Liability</th>
-                <th>Cover</th>
-              </tr>
-            </thead>
-            <tbody>
-              {allPolicies.map((policy, index) => (
-                <tr key={index} className="text-center border-t">
-                  <td>{policy.policyID}</td>
-                  <td>{policy.insurancePlan}</td>
-                  <td>{policy.basePremiumRate}</td>
-                  <td>{policy.deductible}</td>
-                  <td>{policy.insuranceCoverage}</td>
-                  <td>{policy.thirdPartyLiability}</td>
-                  <td>{policy.cover ? policy.cover.join(', ') : ''}</td>
+          {loading ? (
+            <div className="text-center">
+              <p>Loading policies...</p>
+            </div>
+          ) : allPolicies.length === 0 ? (
+            <p className="text-center">No policies created yet.</p>
+          ) : (
+            <table className="table-auto w-full border-collapse">
+              <thead className="bg-blue-500 text-white">
+                <tr>
+                  <th className="p-3 text-left">Policy ID</th>
+                  <th className="p-3 text-left">Insurance Plan</th>
+                  <th className="p-3 text-left">Premium Rate</th>
+                  <th className="p-3 text-left">Deductible</th>
+                  <th className="p-3 text-left">Coverage</th>
+                  <th className="p-3 text-left">Third Party Liability</th>
+                  <th className="p-3 text-left">Cover</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        )}
+              </thead>
+              <tbody className="text-gray-700">
+                {allPolicies.map((policy, index) => (
+                  <tr key={index} className="hover:bg-gray-100">
+                    <td className="p-3">{policy.policyID}</td>
+                    <td className="p-3">{policy.insurancePlan}</td>
+                    <td className="p-3">{policy.basePremiumRate}</td>
+                    <td className="p-3">{policy.deductible}</td>
+                    <td className="p-3">{policy.insuranceCoverage}</td>
+                    <td className="p-3">{policy.thirdPartyLiability}</td>
+                    <td className="p-3">{policy.cover.join(', ')}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
+        </div>
       </div>
     </div>
   );

@@ -76,7 +76,7 @@ const Login: React.FC = () => {
         localStorage.setItem("userRole", "ADMIN_ROLE");
         console.log("Login successful! You are an Admin.");
         alert("Login successful! You are an Admin.");
-        navigate("/admin-policy"); // Navigate to the admin dashboard
+        navigate("/admin"); // Navigate to the admin dashboard
         return;
       }/* else {
         console.log("check access denied")

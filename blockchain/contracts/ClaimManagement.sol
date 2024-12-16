@@ -74,24 +74,6 @@ contract ClaimManagement {
             }
         }
 
-        if (!isTypeCovered) {
-            claimCount++;
-            claims[claimCount] = Claim({
-                id: claimCount,
-                claimant: msg.sender,
-                policyID: _policyID,
-                claimType: _claimType,
-                incidentDate: _incidentDate,
-                details: _details,
-                status: ClaimStatus.Rejected,
-                timestamp: block.timestamp,
-                payoutAmountETH: 0
-            });
-
-            emit ClaimRejected(claimCount, "Claim type not covered in the policy");
-            return;
-        }
-
         claimCount++;
         claims[claimCount] = Claim({
             id: claimCount,
@@ -100,12 +82,16 @@ contract ClaimManagement {
             claimType: _claimType,
             incidentDate: _incidentDate,
             details: _details,
-            status: ClaimStatus.Pending,
+            status: isTypeCovered ? ClaimStatus.Pending : ClaimStatus.Rejected,
             timestamp: block.timestamp,
             payoutAmountETH: 0
         });
 
-        emit ClaimSubmitted(claimCount, msg.sender, _policyID, _claimType);
+        if (!isTypeCovered) {
+            emit ClaimRejected(claimCount, "Claim type not covered in the policy");
+        } else {
+            emit ClaimSubmitted(claimCount, msg.sender, _policyID, _claimType);
+        }
     }
 
     /*

@@ -55,7 +55,6 @@ const Register: React.FC = () => {
         });
   
         setAccount(accounts[0]);
-        localStorage.setItem("connectedAccount", accounts[0]);
         setError(null);
       } catch (err) {
         console.error("Metamask connection error:", err);
@@ -117,7 +116,7 @@ const Register: React.FC = () => {
 
         alert("Registration successful! User added as POLICY_HOLDER.");
         localStorage.setItem("userRole", "POLICY_HOLDER_ROLE");
-        navigate("/");
+        navigate("/login");
       }
     } catch (error) {
       console.error("Error during registration:", error);
