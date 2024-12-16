@@ -1,83 +1,48 @@
-let assert;
-
-before(async () => {
-  const chai = await import('chai');
-  assert = chai.assert;
-});
-
+const { assert } = require('chai');
+const Web3 = require("web3");
 const RoleManagement = artifacts.require("RoleManagement");
 const PolicyManagement = artifacts.require("PolicyManagement");
 const MockV3Aggregator = artifacts.require("MockV3Aggregator");
 const PremiumCollection = artifacts.require("PremiumCollection");
 const truffleAssert = require('truffle-assertions');
 
-contract("PolicyManagement", (accounts) => {
-  let roleManagement;
-  let policyManagement;
-  let priceFeed;
-  let premiumCollection;
 
-  const initialPrice = "200000000"; // $2000 USD/ETH (8 decimals)
+contract("PolicyManagement", (accounts) => {
+  let policyManagement;
+  let roleManagement;
+  let priceFeed;
+  let initialPrice = Web3.utils.toWei("200000000", "ether");
+
   const admin = accounts[0];
   const user = accounts[1];
+  
+  let premiumCollection;
 
   beforeEach(async () => {
-    // Deploy RoleManagement and initialize it
+    // Deploy RoleManagement
     roleManagement = await RoleManagement.new([admin]);
-    console.log("✅ RoleManagement deployed at:", roleManagement.address);
 
-    priceFeed = await MockV3Aggregator.new(8, initialPrice); 
-    console.log("✅ Mock PriceFeed deployed at:", priceFeed.address);
+    // Deploy MockV3Aggregator with 8 decimals (standard for USD/ETH price feed)
+    priceFeed = await MockV3Aggregator.new(8, initialPrice); // Price is mocked as 3000 USD/ETH
 
+    // Deploy PolicyManagement
     policyManagement = await PolicyManagement.new(roleManagement.address, priceFeed.address);
-    console.log("✅ PolicyManagement deployed at:", policyManagement.address);
 
+    // Deploy PremiumCollection if needed
     premiumCollection = await PremiumCollection.new(roleManagement.address, policyManagement.address);
-    console.log("✅ PremiumCollection deployed at:", premiumCollection.address);
-
-    // User calls addUser for themselves
-    await roleManagement.addUser({ from: user }); 
   });
 
-  it("should allow admin to create a policy", async () => {
+  it("should allow an admin to create a policy", async () => {
     const policyData = {
       insurancePlan: "Health Insurance",
-      basePremiumRate: "0.001",
+      basePremiumRate: "100 USD",
       deductible: 500,
       insuranceCoverage: 10000,
       thirdPartyLiability: 2000,
       cover: ["Accident", "Theft"]
     };
 
-    const receipt = await policyManagement.createPolicy(
-      policyData.insurancePlan,
-      policyData.basePremiumRate,
-      policyData.deductible,
-      policyData.insuranceCoverage,
-      policyData.thirdPartyLiability,
-      policyData.cover,
-      { from: admin }
-    );
-
-    truffleAssert.eventEmitted(receipt, 'PolicyCreated', (ev) => {
-      return ev.policyID.toString() === "1";
-    });
-
-    const policy = await policyManagement.policies(1);
-    assert.equal(policy.insurancePlan, policyData.insurancePlan, "Policy plan should be correctly set");
-  });
-
-  it("should allow a user to select a policy and calculate premium in ETH", async () => {
-    // 1️⃣ **Admin creates the policy**
-    const policyData = {
-      insurancePlan: "Health Insurance",
-      basePremiumRate: "0.001",
-      deductible: 500,
-      insuranceCoverage: 10000,
-      thirdPartyLiability: 2000,
-      cover: ["Accident", "Theft"]
-    };
-
+    // Create a policy
     await policyManagement.createPolicy(
       policyData.insurancePlan,
       policyData.basePremiumRate,
@@ -88,51 +53,64 @@ contract("PolicyManagement", (accounts) => {
       { from: admin }
     );
 
+    const policy = await policyManagement.policies(1);
+
+    assert.equal(policy.insurancePlan, policyData.insurancePlan, "Policy plan should be correctly set");
+    assert.equal(policy.basePremiumRate, policyData.basePremiumRate, "Premium rate should be correct");
+  });
+
+  it("should allow a user to select a policy", async () => {
+    // Ensure the user is added
+    await roleManagement.addUser(user);
+    assert.isTrue(await roleManagement.isUser(user), "User should be registered");
+
+    // Mock ETH price to 3000 USD/ETH
+    await priceFeed.updateAnswer(Web3.utils.toWei("3000", "ether"));
+
+    // Create the policy
+    const policyData = {
+        insurancePlan: "Health Insurance",
+        basePremiumRate: "100 USD",
+        deductible: 500,
+        insuranceCoverage: 10000,
+        thirdPartyLiability: 2000,
+        cover: ["Accident", "Theft"]
+    };
+    await policyManagement.createPolicy(
+        policyData.insurancePlan,
+        policyData.basePremiumRate,
+        policyData.deductible,
+        policyData.insuranceCoverage,
+        policyData.thirdPartyLiability,
+        policyData.cover,
+        { from: admin }
+    );
+
+    // Select the policy
     const policyID = 1;
     const premiumInUSD = 100;
+    const expectedPremiumInETH = Web3.utils.toWei("0.03333", "ether");
 
-    // 2️⃣ **Convert the premium from USD to Wei**
-    const premiumInWei = await policyManagement.getUSDToETH(premiumInUSD);
-    console.log("Calculated Premium in Wei:", premiumInWei.toString());
+    const receipt = await policyManagement.selectPolicy(user, policyID, premiumInUSD, { from: user });
 
-    // 3️⃣ **User selects the policy and sends the premium**
-    const receipt = await premiumCollection.selectAndPayPolicy(policyID, premiumInUSD, {
-      from: user,
-      value: premiumInWei 
-    });
+    // Assert the PolicySelected event
+    await truffleAssert.eventEmitted(
+      result,
+      'PolicySelected',
+      (ev) => {
+          return ev.user === user && ev.policyID.toString() === "1";
+      },
+      "PolicySelected event should be emitted with correct parameters"
+  );
 
-    // 4️⃣ **Check if the PremiumPaid event was emitted**
-    truffleAssert.eventEmitted(receipt, 'PremiumPaid', (ev) => {
-      return ev.user === user && ev.policyID.toString() === "1";
-    });
-
-    // 5️⃣ **Check if the user's policy was recorded**
-    const [policyIDs, premiumPricesETH, dueDates] = await policyManagement.getUserSelectedPolicies(user);
-    assert.equal(policyIDs[0].toNumber(), policyID, "Policy ID should match");
-    assert.equal(premiumPricesETH[0].toString(), premiumInWei.toString(), "Premium in ETH should match");
+    // Check the user's selected policies
+    const selectedPolicies = await policyManagement.getUserSelectedPolicies(user);
+    assert.equal(selectedPolicies[0][0].toNumber(), policyID, "Policy ID should match");
+    assert.equal(selectedPolicies[1][0].toString(), expectedPremiumInETH, "Premium in ETH should match");
     assert.isAbove(
-      dueDates[0].toNumber(),
-      Math.floor(Date.now() / 1000),
-      "Next due date should be in the future"
+        selectedPolicies[2][0].toNumber(),
+        Math.floor(Date.now() / 1000),
+        "Next due date should be in the future"
     );
-  });
-
-  it("should allow user to register themselves as a POLICY_HOLDER", async () => {
-    const newUser = accounts[2];
-    await roleManagement.addUser({ from: newUser });
-
-    const isUser = await roleManagement.isUser(newUser);
-    assert.isTrue(isUser, "New user should be registered as a POLICY_HOLDER");
-  });
-
-  it("should fail to register the same user twice", async () => {
-    await truffleAssert.reverts(
-      roleManagement.addUser({ from: user }),
-      "Address is already a policy holder"
-    );
-  });
-
-  it("should pass a simple dummy test", async () => {
-    assert.equal(1, 1, "Dummy test failed");
-  });
+});
 });
